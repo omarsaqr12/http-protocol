@@ -1,38 +1,80 @@
-[![progress-banner](https://backend.codecrafters.io/progress/http-server/958d3365-b403-4577-a8e7-ceae8aa9f3d3)](https://app.codecrafters.io/users/codecrafters-bot?r=2qF)
 
-This is a starting point for Python solutions to the
-["Build Your Own HTTP server" Challenge](https://app.codecrafters.io/courses/http-server/overview).
+# Python HTTP Server
 
-[HTTP](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol) is the
-protocol that powers the web. In this challenge, you'll build a HTTP/1.1 server
-that is capable of serving multiple clients.
+## Overview
 
-Along the way you'll learn about TCP servers,
-[HTTP request syntax](https://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html),
-and more.
+This project implements a simple multi-threaded HTTP server in Python that can handle basic GET and POST requests. The server is designed to serve files, handle echo requests, and support gzip compression for responses.
 
-**Note**: If you're viewing this repo on GitHub, head over to
-[codecrafters.io](https://codecrafters.io) to try the challenge.
+## Features
 
-# Passing the first stage
+- **GET Requests**:
+  - Serves files from a specified directory.
+  - Returns user-agent information if requested.
+  - Echoes back text provided in the URL.
+  - Supports gzip compression for echo responses.
+  
+- **POST Requests**:
+  - Receives data and stores it in a file within a specified directory.
 
-The entry point for your HTTP server implementation is in `app/main.py`. Study
-and uncomment the relevant code, and push your changes to pass the first stage:
+## File Structure
 
-```sh
-git add .
-git commit -m "pass 1st stage" # any msg
-git push origin master
-```
+- **main.py**: The main script that sets up the server and handles incoming client requests.
+  
+## Getting Started
 
-Time to move on to the next stage!
+### Prerequisites
 
-# Stage 2 & beyond
+- Python 3.x
+- Basic understanding of HTTP methods and Python threading.
 
-Note: This section is for stages 2 and beyond.
+### Installation
 
-1. Ensure you have `python (3.11)` installed locally
-1. Run `./your_program.sh` to run your program, which is implemented in
-   `app/main.py`.
-1. Commit your changes and run `git push origin master` to submit your solution
-   to CodeCrafters. Test output will be streamed to your terminal.
+1. Clone the repository (if applicable):
+
+   \`\`\`sh
+   git clone https://github.com/yourusername/yourrepo.git
+   cd yourrepo
+   \`\`\`
+
+2. Run the server:
+
+   \`\`\`sh
+   python3 main.py /path/to/directory
+   \`\`\`
+
+   Replace `/path/to/directory` with the directory you want the server to use for serving and storing files.
+
+### Usage
+
+- **GET /files/filename**: Retrieve the contents of `filename` from the specified directory.
+- **POST /files/filename**: Store the content sent in the body of the request into `filename` in the specified directory.
+- **GET /echo/sometext**: Returns the `sometext` provided in the URL. Supports gzip compression if requested via `Accept-Encoding`.
+- **GET /user-agent**: Returns the User-Agent string of the client.
+
+### Example
+
+1. **GET Request to Retrieve a File**:
+   
+   \`\`\`
+   GET /files/example.txt HTTP/1.1
+   Host: localhost:4221
+   \`\`\`
+
+2. **POST Request to Store a File**:
+   
+   \`\`\`
+   POST /files/example.txt HTTP/1.1
+   Host: localhost:4221
+   Content-Length: 11
+
+   Hello World
+   \`\`\`
+
+### Contributing
+
+If you'd like to contribute to this project, please fork the repository and submit a pull request.
+
+### License
+
+This project is licensed under the MIT License - see the `LICENSE` file for details.
+
