@@ -128,11 +128,14 @@ def dispatch(method, target, headers, body, directory):
         for encoding in encodings:
             name, *parameters = encoding.split(";")
             if name.strip().lower() == "gzip":
-                accepts_gzip = not any(
-                    parameter.strip().lower().replace(" ", "") == "q=0"
-                    or parameter.strip().lower().replace(" ", "") == "q=0.0"
-                    for parameter in parameters
-                )
+                accepts_gzip = True
+                for parameter in parameters:
+                    key, separator, value = parameter.strip().partition("=")
+                    if separator and key.lower() == "q":
+                        try:
+                            accepts_gzip = float(value) > 0
+                        except ValueError:
+                            accepts_gzip = False
         if accepts_gzip:
             content = gzip.compress(content)
             extra["Content-Encoding"] = "gzip"

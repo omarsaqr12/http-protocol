@@ -9,7 +9,7 @@
 
 ## Baseline inventory and file coverage
 
-All **six** tracked files were read in full: `Pipfile`, `Pipfile.lock`, `README.md`, `app/main.py`, `codecrafters.yml`, and `your_program.sh`. No tracked binary/vendor material or results were present. The CodeCrafters scaffold/configuration is retained without changes. No external tests, grader scores, or contribution breakdown were available.
+All **six** tracked files were read in full: `Pipfile`, `Pipfile.lock`, `README.md`, `app/main.py`, `codecrafters.yml`, and `your_program.sh`. No tracked binary/vendor material or results were present. The CodeCrafters scaffold/configuration is retained without changes. Its launcher is tracked without an executable bit; invoke it with `sh your_program.sh` after installing Pipenv. No external tests, grader scores, or contribution breakdown were available.
 
 ## Confirmed baseline problems (source review)
 
@@ -26,7 +26,7 @@ All **six** tracked files were read in full: `Pipfile`, `Pipfile.lock`, `README.
 - Added socketpair regression tests and a standard-library quickstart; kept the original CodeCrafters files intact.
 - Added lightweight GitHub Actions test workflow (Python 3.12); check the PR for the actual remote CI outcome.
 
-Local verification: `python3 -m unittest discover -s tests -v`; `python3 -m py_compile app/main.py tests/test_http.py`. The tests cover file uploads split across recv calls, binary bodies, accurate response framing, malformed lengths, oversized inputs, traversal and symlink rejection, and supported routes. This is a local test suite, not an independently reproduced CodeCrafters score.
+Local verification: `python3 -m unittest discover -s tests -v`; `python3 -m py_compile app/main.py tests/test_http.py`. The tests cover file uploads split across recv calls, binary bodies, accurate response framing, malformed lengths, oversized inputs, concurrent file requests, traversal and symlink rejection, and supported routes. This is a local test suite, not an independently reproduced CodeCrafters score.
 
 ## Deliberate scope and limitations
 

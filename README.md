@@ -22,7 +22,7 @@ curl -i http://localhost:4221/files/readme.txt
 curl -i -H 'Accept-Encoding: gzip' --compressed http://localhost:4221/echo/hello
 ```
 
-The default port is `4221`; optionally pass `--port NUMBER`. The configured directory must already exist. The CodeCrafters-compatible launcher, `./your_program.sh --directory ./served-files`, uses Pipenv and requires `pipenv` to be installed; direct Python execution has no third-party runtime dependencies.
+The default port is `4221`; optionally pass `--port NUMBER`. The configured directory must already exist. The CodeCrafters-compatible launcher, `sh your_program.sh --directory ./served-files`, uses Pipenv and requires `pipenv` to be installed; direct Python execution has no third-party runtime dependencies. The launcher is not tracked as executable, so invoke it with `sh`.
 
 ## Supported behavior
 

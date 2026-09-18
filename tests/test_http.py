@@ -69,6 +69,9 @@ class ServerTests(unittest.TestCase):
         _, headers, body = self.request(b"GET /echo/testing HTTP/1.1\r\nAccept-Encoding: gzip;q=0\r\n\r\n")
         self.assertNotIn(b"Content-Encoding", headers)
         self.assertEqual(body, b"testing")
+        _, headers, body = self.request(b"GET /echo/testing HTTP/1.1\r\nAccept-Encoding: gzip;q=0.00\r\n\r\n")
+        self.assertNotIn(b"Content-Encoding", headers)
+        self.assertEqual(body, b"testing")
 
     def test_missing_file(self):
         self.assertEqual(self.request(b"GET /files/missing HTTP/1.1\r\n\r\n")[0], b"HTTP/1.1 404 Not Found")
@@ -110,7 +113,29 @@ class ServerTests(unittest.TestCase):
     def test_no_process_chdir_on_concurrent_requests(self):
         import os
         original = os.getcwd()
-        self.request(b"GET /files/missing HTTP/1.1\r\n\r\n")
+        clients = []
+        workers = []
+        for name in ("one", "two", "three"):
+            (self.directory / name).write_text(name)
+            server, client = socket.socketpair()
+            workers.append(threading.Thread(target=handle_client, args=(server, self.directory)))
+            clients.append((name, client))
+        for worker in workers:
+            worker.start()
+        for name, client in clients:
+            with client:
+                client.sendall(f"GET /files/{name} HTTP/1.1\r\n\r\n".encode())
+                client.shutdown(socket.SHUT_WR)
+                reply = b""
+                while True:
+                    part = client.recv(4096)
+                    if not part:
+                        break
+                    reply += part
+                self.assertEqual(reply.split(b"\r\n\r\n", 1)[1], name.encode())
+        for worker in workers:
+            worker.join(timeout=3)
+            self.assertFalse(worker.is_alive())
         self.assertEqual(os.getcwd(), original)
 
     def test_unknown_method(self):
