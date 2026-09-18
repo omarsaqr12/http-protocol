@@ -1,80 +1,53 @@
+# Python HTTP server
 
-# Python HTTP Server
+A small, multithreaded **HTTP/1.1 learning project** built for the [CodeCrafters HTTP server challenge](https://codecrafters.io/challenges/http-server/overview). It implements request parsing, four GET routes, file upload, and optional gzip on echo responses using Python's standard library. It is **not a general-purpose or production-ready HTTP server**.
 
-## Overview
+## Try it locally
 
-This project implements a simple multi-threaded HTTP server in Python that can handle basic GET and POST requests. The server is designed to serve files, handle echo requests, and support gzip compression for responses.
+Requires Python 3.12 or later. From the repository root:
 
-## Features
+```bash
+mkdir -p served-files
+python3 -m app.main --directory ./served-files
+```
 
-- **GET Requests**:
-  - Serves files from a specified directory.
-  - Returns user-agent information if requested.
-  - Echoes back text provided in the URL.
-  - Supports gzip compression for echo responses.
-  
-- **POST Requests**:
-  - Receives data and stores it in a file within a specified directory.
+In a second terminal:
 
-## File Structure
+```bash
+curl -i http://localhost:4221/
+curl -i http://localhost:4221/echo/hello
+curl -i http://localhost:4221/user-agent
+curl -i --data-binary @README.md http://localhost:4221/files/readme.txt
+curl -i http://localhost:4221/files/readme.txt
+curl -i -H 'Accept-Encoding: gzip' --compressed http://localhost:4221/echo/hello
+```
 
-- **main.py**: The main script that sets up the server and handles incoming client requests.
-  
-## Getting Started
+The default port is `4221`; optionally pass `--port NUMBER`. The configured directory must already exist. The CodeCrafters-compatible launcher, `./your_program.sh --directory ./served-files`, uses Pipenv and requires `pipenv` to be installed; direct Python execution has no third-party runtime dependencies.
 
-### Prerequisites
+## Supported behavior
 
-- Python 3.x
-- Basic understanding of HTTP methods and Python threading.
+| Request | Behavior |
+| --- | --- |
+| `GET /` | Empty `200 OK` response. |
+| `GET /echo/<text>` | Echoes URL-decoded path bytes; uses gzip if the client accepts it. |
+| `GET /user-agent` | Returns the request's User-Agent value, if present. |
+| `GET /files/<filename>` | Returns binary file content, or `404` if missing. |
+| `POST /files/<filename>` | Saves exactly the request body bytes and returns `201`. Requires `Content-Length`. |
 
-### Installation
+Requests are read until the header boundary and then through the advertised `Content-Length`, even across multiple socket reads. Responses use byte-accurate `Content-Length`, and each connection handles one request before closing. File routes accept a **single filename** within `--directory`; encoded separators, `..`, and symlinks resolving outside it are rejected. The implementation limits headers to 16 KiB and bodies to 8 MiB, and returns errors for malformed framing rather than writing partial uploads.
 
-1. Clone the repository (if applicable):
+## Architecture and evidence
 
-   \`\`\`sh
-   git clone https://github.com/yourusername/yourrepo.git
-   cd yourrepo
-   \`\`\`
+- [`app/main.py`](app/main.py): socket listener and per-connection threads; request parsing, dispatch, and HTTP response serialization.
+- [`tests/test_http.py`](tests/test_http.py): socket-pair tests for fragmented and binary requests, header casing, gzip, invalid framing, and file-path safety.
+- [`REVIEW_NOTES.md`](REVIEW_NOTES.md): starting commit, file coverage, fixes, verification, and remaining boundaries.
 
-2. Run the server:
+Run the local regression suite:
 
-   \`\`\`sh
-   python3 main.py /path/to/directory
-   \`\`\`
+```bash
+python3 -m unittest discover -s tests -v
+```
 
-   Replace `/path/to/directory` with the directory you want the server to use for serving and storing files.
+## Boundaries
 
-### Usage
-
-- **GET /files/filename**: Retrieve the contents of `filename` from the specified directory.
-- **POST /files/filename**: Store the content sent in the body of the request into `filename` in the specified directory.
-- **GET /echo/sometext**: Returns the `sometext` provided in the URL. Supports gzip compression if requested via `Accept-Encoding`.
-- **GET /user-agent**: Returns the User-Agent string of the client.
-
-### Example
-
-1. **GET Request to Retrieve a File**:
-   
-   \`\`\`
-   GET /files/example.txt HTTP/1.1
-   Host: localhost:4221
-   \`\`\`
-
-2. **POST Request to Store a File**:
-   
-   \`\`\`
-   POST /files/example.txt HTTP/1.1
-   Host: localhost:4221
-   Content-Length: 11
-
-   Hello World
-   \`\`\`
-
-### Contributing
-
-If you'd like to contribute to this project, please fork the repository and submit a pull request.
-
-### License
-
-This project is licensed under the MIT License - see the `LICENSE` file for details.
-
+Only GET and POST routes above are implemented; there is no TLS, authentication, persistent connections, chunked request decoding, directory listing, or claim of complete RFC 9112 compliance. This is a local educational server: do not expose it to the internet or use it with sensitive data. The tests are local checks, **not** a claimed CodeCrafters grading result. The project originates from a CodeCrafters exercise; the repository history, not this README, is the source for attribution of individual work. No license is asserted because no license file is present.
